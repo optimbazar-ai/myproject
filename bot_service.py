@@ -201,29 +201,30 @@ class InstagramBot:
         
         try:
             hashtags = os.getenv('TARGET_HASHTAGS', 'cafe,restoran,tadbirlar').split(',')
+            self.log_activity(f"🌱 Growth Bot ishlayapti: {len(hashtags)} ta hashtag")
             
             for hashtag in hashtags:
                 hashtag = hashtag.strip()
                 if not hashtag:
                     continue
                 
-                if os.getenv('AUTO_LIKE_ENABLED', 'false').lower() == 'true':
-                    count, msg = self.growth_bot.auto_like_by_hashtag(hashtag, max_likes=5)
-                    if count > 0:
+                try:
+                    if os.getenv('AUTO_LIKE_ENABLED', 'false').lower() == 'true':
+                        count, msg = self.growth_bot.auto_like_by_hashtag(hashtag, max_likes=5)
                         self.log_activity(f"👍 {msg}")
-                    time.sleep(10)
-                
-                if os.getenv('AUTO_FOLLOW_ENABLED', 'false').lower() == 'true':
-                    count, msg = self.growth_bot.auto_follow_by_hashtag(hashtag, max_follows=2)
-                    if count > 0:
+                        time.sleep(10)
+                    
+                    if os.getenv('AUTO_FOLLOW_ENABLED', 'false').lower() == 'true':
+                        count, msg = self.growth_bot.auto_follow_by_hashtag(hashtag, max_follows=2)
                         self.log_activity(f"👥 {msg}")
-                    time.sleep(15)
-                
-                if os.getenv('AUTO_COMMENT_ENABLED', 'false').lower() == 'true':
-                    count, msg = self.growth_bot.auto_comment_by_hashtag(hashtag, max_comments=1)
-                    if count > 0:
+                        time.sleep(15)
+                    
+                    if os.getenv('AUTO_COMMENT_ENABLED', 'false').lower() == 'true':
+                        count, msg = self.growth_bot.auto_comment_by_hashtag(hashtag, max_comments=1)
                         self.log_activity(f"💬 {msg}")
-                    time.sleep(20)
+                        time.sleep(20)
+                except Exception as hashtag_error:
+                    self.log_activity(f"⚠️ #{hashtag} xatosi: {str(hashtag_error)[:100]}")
                 
         except Exception as e:
             self.log_activity(f"⚠️ Growth bot xatosi: {str(e)}")
