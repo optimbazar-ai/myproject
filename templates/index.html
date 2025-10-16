@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Instagram AI Bot Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Instagram AI Bot</h1>
+            <p>Gemini AI bilan avtomatik javoblar</p>
+        </header>
+
+        <div class="status-card">
+            <h2>📊 Status</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="label">Instagram:</span>
+                    <span id="login-status" class="status-badge">❌ Kirilmagan</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Bot:</span>
+                    <span id="bot-status" class="status-badge">⏸️ To'xtatilgan</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Kommentlar:</span>
+                    <span id="comments-count" class="count">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">DM javoblar:</span>
+                    <span id="dms-count" class="count">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-card" id="config-info">
+            <h3>⚙️ Sozlamalar</h3>
+            <p><strong>Til:</strong> <span id="config-lang">-</span></p>
+            <p><strong>Tekshirish oralig'i:</strong> <span id="config-interval">-</span> soniya</p>
+            <p><strong>Gemini API:</strong> <span id="config-gemini">-</span></p>
+        </div>
+
+        <div class="login-card" id="login-card">
+            <h2>🔐 Instagram'ga kirish</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Instagram username" required>
+                <input type="password" id="password" placeholder="Parol" required>
+                <button type="submit" class="btn btn-primary">Kirish</button>
+            </form>
+        </div>
+
+        <div class="control-card" id="control-card" style="display: none;">
+            <h2>🎮 Boshqaruv</h2>
+            <div class="button-group">
+                <button id="start-btn" class="btn btn-success">▶️ Boshlash</button>
+                <button id="stop-btn" class="btn btn-danger">⏸️ To'xtatish</button>
+            </div>
+        </div>
+
+        <div class="log-card">
+            <h2>📝 Faoliyat logi</h2>
+            <div id="activity-log" class="log-container">
+                <p class="log-empty">Hozircha faoliyat yo'q...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+
+                document.getElementById('login-status').textContent = 
+                    status.is_logged_in ? '✅ Kirilgan' : '❌ Kirilmagan';
+                document.getElementById('login-status').className = 
+                    status.is_logged_in ? 'status-badge success' : 'status-badge error';
+
+                document.getElementById('bot-status').textContent = 
+                    status.is_running ? '🟢 Ishlamoqda' : '⏸️ To\'xtatilgan';
+                document.getElementById('bot-status').className = 
+                    status.is_running ? 'status-badge success' : 'status-badge warning';
+
+                document.getElementById('comments-count').textContent = status.replied_comments;
+                document.getElementById('dms-count').textContent = status.replied_dms;
+
+                if (status.is_logged_in) {
+                    document.getElementById('login-card').style.display = 'none';
+                    document.getElementById('control-card').style.display = 'block';
+                }
+
+                const logContainer = document.getElementById('activity-log');
+                if (status.activity_log && status.activity_log.length > 0) {
+                    logContainer.innerHTML = status.activity_log
+                        .map(log => `<div class="log-entry">${log}</div>`)
+                        .reverse()
+                        .join('');
+                }
+            } catch (error) {
+                console.error('Status yangilash xatosi:', error);
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                document.getElementById('config-lang').textContent = config.language;
+                document.getElementById('config-interval').textContent = config.check_interval;
+                document.getElementById('config-gemini').textContent = 
+                    config.has_gemini_key ? '✅ Sozlangan' : '❌ Sozlanmagan';
+            } catch (error) {
+                console.error('Config yuklash xatosi:', error);
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = e.target.querySelector('button');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Kutilmoqda...';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+
+                const result = await response.json();
+                alert(result.message);
+
+                if (result.success) {
+                    updateStatus();
+                }
+            } catch (error) {
+                alert('Xatolik yuz berdi: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Kirish';
+            }
+        });
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/start', {method: 'POST'});
+                const result = await response.json();
+                alert(result.message);
+                updateStatus();
+            } catch (error) {
+                alert('Xatolik: ' + error.message);
+            }
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/stop', {method: 'POST'});
+                const result = await response.json();
+                alert(result.message);
+                updateStatus();
+            } catch (error) {
+                alert('Xatolik: ' + error.message);
+            }
+        });
+
+        loadConfig();
+        updateStatus();
+        updateInterval = setInterval(updateStatus, 3000);
+    </script>
+</body>
+</html>
