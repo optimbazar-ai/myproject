@@ -84,16 +84,40 @@ class InstagramBot:
             error_msg = str(e)
             self.log_activity(f"❌ Login xatosi: {error_msg}")
             
-            if "challenge" in error_msg.lower():
-                return False, "Instagram tasdiqlash so'ramoqda. Ilova orqali login qilishda muammo bo'lishi mumkin. Instagram'dan xavfsizlik tekshiruvini o'tkazing."
+            if "429" in error_msg or "rate" in error_msg.lower():
+                return False, "❌ Instagram sizni blokladi (429 Rate Limit). Parol orqali kirish ishlamaydi. Yuqoridagi 'Session Cookie' usulidan foydalaning!"
+            elif "challenge" in error_msg.lower():
+                return False, "Instagram tasdiqlash so'ramoqda. 'Session Cookie' usulidan foydalaning."
             elif "two_factor" in error_msg.lower() or "2fa" in error_msg.lower():
-                return False, "2FA (ikki bosqichli tasdiqlash) yoqilgan. Botni ishlatish uchun 2FA'ni o'chirib qo'ying yoki maxsus paroldan foydalaning."
+                return False, "2FA yoqilgan. 'Session Cookie' usulidan foydalaning."
             elif "checkpoint" in error_msg.lower():
-                return False, "Instagram checkpoint talab qilmoqda. Telefon yoki brauzerdan kirish kerak."
+                return False, "Instagram checkpoint talab qilmoqda. 'Session Cookie' usulidan foydalaning."
             elif "password" in error_msg.lower():
                 return False, "Login yoki parol noto'g'ri. Qaytadan tekshiring."
             elif "NoneType" in error_msg:
-                return False, "Instagram javob bermadi. Keyinroq qayta urinib ko'ring yoki akkauntingizda 2FA yo'qligini tekshiring."
+                return False, "Instagram javob bermadi (bloklangan bo'lishi mumkin). 'Session Cookie' usulidan foydalaning."
+            else:
+                return False, f"Xatolik: {error_msg[:100]}"
+    
+    def login_with_sessionid(self, sessionid: str) -> tuple[bool, str]:
+        """Login to Instagram using session cookie (bypasses rate limits and 2FA)"""
+        try:
+            self.cl = Client()
+            self.cl.delay_range = [1, 3]
+            
+            self.cl.login_by_sessionid(sessionid)
+            self.cl.dump_settings(self.session_file)
+            
+            username = self.cl.username
+            self.is_logged_in = True
+            self.log_activity(f"✅ Session cookie orqali muvaffaqiyatli kirdik: @{username}")
+            return True, f"Muvaffaqiyatli! @{username} sifatida kirdik"
+        except Exception as e:
+            error_msg = str(e)
+            self.log_activity(f"❌ Session cookie xatosi: {error_msg}")
+            
+            if "sessionid" in error_msg.lower() or "cookie" in error_msg.lower():
+                return False, "Session cookie noto'g'ri yoki muddati o'tgan. Yangi sessionid oling."
             else:
                 return False, f"Xatolik: {error_msg[:100]}"
     

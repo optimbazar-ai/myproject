@@ -26,6 +26,18 @@ def login():
     success, message = bot_instance.login(username, password)
     return jsonify({'success': success, 'message': message})
 
+@app.route('/api/login_sessionid', methods=['POST'])
+def login_sessionid():
+    """Login to Instagram using session cookie"""
+    data = request.json
+    sessionid = data.get('sessionid', '').strip()
+    
+    if not sessionid:
+        return jsonify({'success': False, 'message': 'Session cookie kerak!'}), 400
+    
+    success, message = bot_instance.login_with_sessionid(sessionid)
+    return jsonify({'success': success, 'message': message})
+
 @app.route('/api/start', methods=['POST'])
 def start_bot():
     """Start the bot"""

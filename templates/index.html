@@ -44,11 +44,42 @@
 
         <div class="login-card" id="login-card">
             <h2>🔐 Instagram'ga kirish</h2>
-            <form id="login-form">
-                <input type="text" id="username" placeholder="Instagram username" required>
-                <input type="password" id="password" placeholder="Parol" required>
-                <button type="submit" class="btn btn-primary">Kirish</button>
-            </form>
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0; color: #856404;"><strong>⚠️ Muhim:</strong> Agar parol orqali kirish ishlamasa (429 xatosi), Session Cookie usulidan foydalaning!</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #17a2b8;">🔑 Usul 1: Session Cookie (Tavsiya etiladi)</h3>
+                <details style="margin-bottom: 15px;">
+                    <summary style="cursor: pointer; color: #007bff; font-weight: 500;">📖 Qanday sessionid olish? (Bosing)</summary>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px;">
+                        <p><strong>Chrome/Edge/Firefox:</strong></p>
+                        <ol style="line-height: 1.8;">
+                            <li>Kompyuter brauzerida <a href="https://instagram.com" target="_blank">instagram.com</a> ga kiring</li>
+                            <li><strong>F12</strong> tugmasini bosing (Developer Tools ochiladi)</li>
+                            <li>Yuqorida <strong>"Application"</strong> yoki <strong>"Storage"</strong> tabini toping</li>
+                            <li>Chap tarafdan <strong>"Cookies"</strong> → <strong>"https://www.instagram.com"</strong> ni tanlang</li>
+                            <li><strong>"sessionid"</strong> ni toping va uning <strong>Value</strong> qiymatini nusxalang</li>
+                            <li>Qiymat taxminan 40-50 ta belgi uzunlikda bo'ladi</li>
+                        </ol>
+                    </div>
+                </details>
+                <form id="sessionid-form">
+                    <input type="text" id="sessionid" placeholder="sessionid cookie qiymati" required 
+                           style="font-family: monospace; font-size: 13px;">
+                    <button type="submit" class="btn btn-success">Session orqali kirish</button>
+                </form>
+            </div>
+            
+            <div>
+                <h3 style="color: #6c757d;">🔒 Usul 2: Parol (Muammo bo'lishi mumkin)</h3>
+                <form id="login-form">
+                    <input type="text" id="username" placeholder="Instagram username" required>
+                    <input type="password" id="password" placeholder="Parol" required>
+                    <button type="submit" class="btn btn-primary">Parol orqali kirish</button>
+                </form>
+            </div>
         </div>
 
         <div class="control-card" id="control-card" style="display: none;">
@@ -119,6 +150,35 @@
             }
         }
 
+        document.getElementById('sessionid-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sessionid = document.getElementById('sessionid').value.trim();
+            const submitBtn = e.target.querySelector('button');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Kutilmoqda...';
+
+            try {
+                const response = await fetch('/api/login_sessionid', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sessionid})
+                });
+
+                const result = await response.json();
+                alert(result.message);
+
+                if (result.success) {
+                    updateStatus();
+                }
+            } catch (error) {
+                alert('Xatolik yuz berdi: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Session orqali kirish';
+            }
+        });
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
@@ -145,7 +205,7 @@
                 alert('Xatolik yuz berdi: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Kirish';
+                submitBtn.textContent = 'Parol orqali kirish';
             }
         });
 

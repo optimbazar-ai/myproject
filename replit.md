@@ -16,6 +16,7 @@ An intelligent Instagram bot that automatically replies to comments and direct m
 - Manual start/stop controls
 - Real-time activity logs
 - Configurable response language (Uzbek by default)
+- Dual login methods: password-based and session cookie (bypasses rate limits)
 
 ## Project Structure
 ```
@@ -32,12 +33,14 @@ An intelligent Instagram bot that automatically replies to comments and direct m
 ```
 
 ## Recent Changes
+- **October 16, 2025 - Session Cookie Login**: Added sessionid-based login to bypass Instagram rate limiting (429 errors), 2FA, and checkpoint challenges. This is now the recommended login method.
 - Initial project setup (October 16, 2025)
 - Converted from Docker-based to Replit-compatible web application
 - Added Flask web dashboard for bot monitoring
 - Implemented session persistence to avoid re-login on every restart
 - Added persistent storage for replied comment/DM IDs to prevent duplicates
 - Improved thread management with proper join on stop
+- Enhanced error handling with user-friendly Uzbek messages
 
 ## Configuration
 Required environment variables:
