@@ -38,10 +38,12 @@ env/
 *.swo
 *~
 
-# Bot data
+# Bot data and sessions
 bot_data/
 *.session
-*.json
+instagram_session.json
+replied_ids.json
+growth_stats.json
 
 # Logs
 *.log

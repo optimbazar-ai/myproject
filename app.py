@@ -1,12 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from bot_service import bot_instance
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SESSION_SECRET', 'dev-secret-key-change-in-production')
+app.secret_key = os.environ.get('SESSION_SECRET', 'dev-secret-key-change-in-production')
 
 @app.route('/')
 def index():

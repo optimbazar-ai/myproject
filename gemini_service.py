@@ -1,12 +1,10 @@
 import google.generativeai as genai
 import os
-from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv()
-
-api_key = os.environ.get('GEMINI_API_KEY') or os.getenv('GEMINI_API_KEY', '')
-genai.configure(api_key=api_key)
+api_key = os.environ.get('GEMINI_API_KEY', '')
+if api_key:
+    genai.configure(api_key=api_key)
 
 
 def load_knowledge_base() -> str:

@@ -3,12 +3,9 @@ import time
 import os
 import json
 from pathlib import Path
-from dotenv import load_dotenv
 from gemini_service import generate_reply
 from growth_bot import GrowthBot
 import threading
-
-load_dotenv()
 
 class InstagramBot:
     def __init__(self):
