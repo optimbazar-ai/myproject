@@ -4,13 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv('GEMINI_API_KEY', ''))
+api_key = os.environ.get('GEMINI_API_KEY') or os.getenv('GEMINI_API_KEY', '')
+genai.configure(api_key=api_key)
 
 
 def generate_reply(user_message: str, language: str = "uz") -> str:
     """Generate AI reply using Gemini 1.5 Flash"""
     try:
-        if not os.getenv('GEMINI_API_KEY'):
+        api_key = os.environ.get('GEMINI_API_KEY') or os.getenv('GEMINI_API_KEY')
+        if not api_key:
             return "⚠️ Gemini API key topilmadi. Iltimos, sozlamalarni tekshiring."
 
         model = genai.GenerativeModel("gemini-1.5-flash")
