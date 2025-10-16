@@ -25,7 +25,8 @@ def generate_reply(user_message: str, language: str = "uz") -> str:
     try:
         api_key = os.environ.get('GEMINI_API_KEY') or os.getenv('GEMINI_API_KEY')
         if not api_key:
-            return "⚠️ Gemini API key topilmadi. Iltimos, sozlamalarni tekshiring."
+            print("⚠️ GEMINI_API_KEY topilmadi!")
+            return "⚠️ Gemini API key topilmadi"
 
         knowledge_base = load_knowledge_base()
         
@@ -44,7 +45,13 @@ Iltimos, {language} tilida qisqa, foydali va professional javob yozing. Kompaniy
             prompt = f"Foydalanuvchi xabari: {user_message}\nIltimos, {language} tilida foydali, do'stona va qisqa javob yozing."
 
         response = model.generate_content(prompt)
+        
+        if not response or not hasattr(response, 'text'):
+            print(f"⚠️ Gemini javob bermadi: {response}")
+            return "⚠️ Gemini javob bermadi"
+        
         return response.text.strip()
     except Exception as e:
-        print(f"❌ Gemini xatosi: {e}")
-        return "Sizni qanday mahsulotlar qiziqtiradi 😊"
+        error_msg = str(e)
+        print(f"❌ Gemini xatosi: {error_msg[:200]}")
+        return f"⚠️ Gemini xatosi: {error_msg[:50]}"

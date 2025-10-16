@@ -129,7 +129,12 @@ class InstagramBot:
             return
         
         try:
-            medias = self.cl.user_medias(self.cl.user_id, 5)
+            try:
+                medias = self.cl.user_medias(self.cl.user_id, 5)
+            except Exception as media_error:
+                self.log_activity(f"⚠️ Media olish xatosi (Instagram API): {str(media_error)[:100]}")
+                return
+            
             for media in medias:
                 comments = self.cl.media_comments(media.id)
                 for comment in comments:
@@ -146,8 +151,6 @@ class InstagramBot:
                                 self.replied_comments.add(comment_id)
                                 self._save_replied_ids()
                                 time.sleep(2)
-                            else:
-                                self.log_activity(f"⚠️ Gemini API xatosi - javob yuborilmadi")
         except Exception as e:
             self.log_activity(f"⚠️ Kommentlar xatosi: {str(e)}")
     
