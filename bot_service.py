@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 from gemini_service import generate_reply
+from growth_bot import GrowthBot
 import threading
 
 load_dotenv()
@@ -18,6 +19,8 @@ class InstagramBot:
         self.replied_dms = set()
         self.activity_log = []
         self.thread = None
+        self.growth_bot = None
+        self.growth_enabled = False
         self.session_file = "instagram_session.json"
         self.replied_ids_file = "replied_ids.json"
         self._load_replied_ids()
@@ -78,6 +81,7 @@ class InstagramBot:
                 self.log_activity("✅ Birinchi marta session yaratildi")
             
             self.is_logged_in = True
+            self.growth_bot = GrowthBot(self.cl)
             self.log_activity(f"✅ Instagram'ga muvaffaqiyatli kirdik: @{username}")
             return True, "Muvaffaqiyatli kirdik!"
         except Exception as e:
@@ -110,6 +114,7 @@ class InstagramBot:
             
             username = self.cl.username
             self.is_logged_in = True
+            self.growth_bot = GrowthBot(self.cl)
             self.log_activity(f"✅ Session cookie orqali muvaffaqiyatli kirdik: @{username}")
             return True, f"Muvaffaqiyatli! @{username} sifatida kirdik"
         except Exception as e:
@@ -177,6 +182,40 @@ class InstagramBot:
         except Exception as e:
             self.log_activity(f"⚠️ DM xatosi: {str(e)}")
     
+    def handle_growth(self):
+        """Handle growth bot activities"""
+        if not self.growth_enabled or not self.growth_bot:
+            return
+        
+        try:
+            hashtags = os.getenv('TARGET_HASHTAGS', 'cafe,restoran,tadbirlar').split(',')
+            
+            for hashtag in hashtags:
+                hashtag = hashtag.strip()
+                if not hashtag:
+                    continue
+                
+                if os.getenv('AUTO_LIKE_ENABLED', 'false').lower() == 'true':
+                    count, msg = self.growth_bot.auto_like_by_hashtag(hashtag, max_likes=5)
+                    if count > 0:
+                        self.log_activity(f"👍 {msg}")
+                    time.sleep(10)
+                
+                if os.getenv('AUTO_FOLLOW_ENABLED', 'false').lower() == 'true':
+                    count, msg = self.growth_bot.auto_follow_by_hashtag(hashtag, max_follows=2)
+                    if count > 0:
+                        self.log_activity(f"👥 {msg}")
+                    time.sleep(15)
+                
+                if os.getenv('AUTO_COMMENT_ENABLED', 'false').lower() == 'true':
+                    count, msg = self.growth_bot.auto_comment_by_hashtag(hashtag, max_comments=1)
+                    if count > 0:
+                        self.log_activity(f"💬 {msg}")
+                    time.sleep(20)
+                
+        except Exception as e:
+            self.log_activity(f"⚠️ Growth bot xatosi: {str(e)}")
+    
     def run_bot(self):
         """Main bot loop"""
         check_interval = int(os.getenv('CHECK_INTERVAL', '30'))
@@ -185,6 +224,7 @@ class InstagramBot:
             try:
                 self.handle_comments()
                 self.handle_dms()
+                self.handle_growth()
             except Exception as e:
                 self.log_activity(f"⚠️ Bot xatosi: {str(e)}")
             
@@ -224,14 +264,30 @@ class InstagramBot:
         self.log_activity("⏸️ Bot to'xtatildi!")
         return True, "Bot to'xtatildi!"
     
+    def toggle_growth(self, enabled: bool) -> tuple[bool, str]:
+        """Enable/disable growth bot"""
+        if not self.is_logged_in:
+            return False, "Avval Instagram'ga kiring!"
+        
+        self.growth_enabled = enabled
+        status = "yoqildi" if enabled else "o'chirildi"
+        self.log_activity(f"🚀 Growth bot {status}!")
+        return True, f"Growth bot {status}!"
+    
     def get_status(self) -> dict:
         """Get bot status"""
+        growth_stats = {}
+        if self.growth_bot:
+            growth_stats = self.growth_bot.get_stats()
+        
         return {
             'is_logged_in': self.is_logged_in,
             'is_running': self.is_running,
+            'growth_enabled': self.growth_enabled,
             'replied_comments': len(self.replied_comments),
             'replied_dms': len(self.replied_dms),
-            'activity_log': self.activity_log[-20:]
+            'activity_log': self.activity_log[-20:],
+            'growth_stats': growth_stats
         }
 
 bot_instance = InstagramBot()

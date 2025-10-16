@@ -1,0 +1,74 @@
+# KOMPANIYA BILIMLAR BAZASI
+# Bu faylga kompaniyangiz haqida to'liq ma'lumot kiriting
+# AI bu ma'lumotlardan foydalanib mijozlarga javob beradi
+
+## KOMPANIYA MA'LUMOTLARI
+KOMPANIYA_NOMI: [Kompaniya nomini kiriting]
+KOMPANIYA_TURI: Paket mahsulotlari, bir martalik idishlar sotuvchi
+
+## MAHSULOTLAR VA XIZMATLAR
+ASOSIY_MAHSULOTLAR:
+- Bir martalik plastik idishlar
+- Bir martalik stakanlar  
+- Paket mahsulotlari
+- O'y-xo'jalik mahsulotlari
+- [Boshqa mahsulotlar...]
+
+MAHSULOT_TAFSILOTLARI:
+[Har bir mahsulot haqida batafsil yozing:
+- Nomi
+- O'lchami/hajmi
+- Narxi (agar ochiq bo'lsa)
+- Minimal buyurtma miqdori
+- Qadoqlanishi
+va boshqalar...]
+
+## XIZMAT KO'RSATISH
+YETKAZIB_BERISH: [Ha/Yo'q, qayerga, narxi]
+ULGURJI_SAVDO: [Ha/Yo'q, minimal miqdor]
+CHAKANA_SAVDO: [Ha/Yo'q]
+TO'LOV_USULLARI: [Naqd, plastik karta, o'tkazma va h.k.]
+
+## ALOQA MA'LUMOTLARI
+TELEFON: [Telefon raqami]
+MANZIL: [To'liq manzil]
+ISH_VAQTI: [Ish kunlari va vaqtlari]
+TELEGRAM: [Agar bo'lsa]
+WEBSITE: [Agar bo'lsa]
+
+## NARXLAR VA AKSIYALAR
+CHEGIRMALAR: [Qanday chegirmalar bor]
+AKSIYALAR: [Hozirgi aksiyalar]
+MAXSUS_TAKLIFLAR: [Katta buyurtmalar uchun maxsus takliflar]
+
+## MAQSADLI MIJOZLAR
+KIM_UCHUN: 
+- Kafe va restoranlar
+- Tadbirlar uchun
+- Do'konlar
+- [Boshqa...]
+
+## RAQOBAT USTUNLIKLARI
+NIMA_UCHUN_BIZ:
+- [Sifat]
+- [Narx]
+- [Yetkazib berish]
+- [Xizmat]
+- [Boshqa ustunliklar...]
+
+## KO'P SO'RALADIGAN SAVOLLAR (FAQ)
+SAVOL_1: [Savol]
+JAVOB_1: [Javob]
+
+SAVOL_2: [Savol]
+JAVOB_2: [Javob]
+
+[Boshqa savollar va javoblar...]
+
+## QOIDALAR VA SHARTLAR
+QAYTARISH_SIYOSATI: [Mahsulotlarni qaytarish qoidalari]
+KAFOLAT: [Kafolat shartlari]
+YETKAZIB_BERISH_VAQTI: [Qancha vaqtda yetkaziladi]
+
+## QO'SHIMCHA MA'LUMOTLAR
+[Boshqa muhim ma'lumotlar...]

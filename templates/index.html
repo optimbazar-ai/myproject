@@ -90,6 +90,44 @@
             </div>
         </div>
 
+        <div class="growth-card" id="growth-card" style="display: none;">
+            <h2>🚀 Growth Bot (Organic Marketing)</h2>
+            <div style="background: #fff3cd; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0; color: #856404; font-size: 14px;"><strong>⚠️ Ogohantirish:</strong> Auto-like/follow/comment Instagram qoidalariga zid. Akkaunt ban qilinishi mumkin!</p>
+            </div>
+            
+            <div class="button-group" style="margin-bottom: 20px;">
+                <button id="growth-on-btn" class="btn btn-success" style="font-size: 14px;">🚀 Growth Bot YOQISH</button>
+                <button id="growth-off-btn" class="btn btn-danger" style="font-size: 14px;">⏸️ Growth Bot O'CHIRISH</button>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="label">Status:</span>
+                    <span id="growth-status" class="status-badge">⏸️ O'chirilgan</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Bugungi Like:</span>
+                    <span id="likes-today" class="count">0</span> / <span id="like-limit">100</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Bugungi Follow:</span>
+                    <span id="follows-today" class="count">0</span> / <span id="follow-limit">40</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Bugungi Comment:</span>
+                    <span id="comments-today" class="count">0</span> / <span id="comment-limit">10</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #007bff;">
+                <p style="margin: 0; color: #004085; font-size: 13px;">
+                    <strong>📝 Eslatma:</strong> Growth Bot sozlamalarini <code>.env.example</code> faylidan o'zgartiring (hashtag, limitlar). 
+                    Keyin Secrets'ga nusxalang.
+                </p>
+            </div>
+        </div>
+
         <div class="log-card">
             <h2>📝 Faoliyat logi</h2>
             <div id="activity-log" class="log-container">
@@ -122,6 +160,21 @@
                 if (status.is_logged_in) {
                     document.getElementById('login-card').style.display = 'none';
                     document.getElementById('control-card').style.display = 'block';
+                    document.getElementById('growth-card').style.display = 'block';
+                }
+
+                document.getElementById('growth-status').textContent = 
+                    status.growth_enabled ? '🟢 Yoqilgan' : '⏸️ O\'chirilgan';
+                document.getElementById('growth-status').className = 
+                    status.growth_enabled ? 'status-badge success' : 'status-badge warning';
+
+                if (status.growth_stats) {
+                    document.getElementById('likes-today').textContent = status.growth_stats.likes_today || 0;
+                    document.getElementById('follows-today').textContent = status.growth_stats.follows_today || 0;
+                    document.getElementById('comments-today').textContent = status.growth_stats.comments_today || 0;
+                    document.getElementById('like-limit').textContent = status.growth_stats.like_limit || 100;
+                    document.getElementById('follow-limit').textContent = status.growth_stats.follow_limit || 40;
+                    document.getElementById('comment-limit').textContent = status.growth_stats.comment_limit || 10;
                 }
 
                 const logContainer = document.getElementById('activity-log');
@@ -223,6 +276,36 @@
         document.getElementById('stop-btn').addEventListener('click', async () => {
             try {
                 const response = await fetch('/api/stop', {method: 'POST'});
+                const result = await response.json();
+                alert(result.message);
+                updateStatus();
+            } catch (error) {
+                alert('Xatolik: ' + error.message);
+            }
+        });
+
+        document.getElementById('growth-on-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/growth/toggle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({enabled: true})
+                });
+                const result = await response.json();
+                alert(result.message);
+                updateStatus();
+            } catch (error) {
+                alert('Xatolik: ' + error.message);
+            }
+        });
+
+        document.getElementById('growth-off-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/growth/toggle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({enabled: false})
+                });
                 const result = await response.json();
                 alert(result.message);
                 updateStatus();

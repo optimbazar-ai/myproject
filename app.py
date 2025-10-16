@@ -62,8 +62,23 @@ def get_config():
     return jsonify({
         'language': os.getenv('LANGUAGE', 'uz'),
         'check_interval': os.getenv('CHECK_INTERVAL', '30'),
-        'has_gemini_key': bool(os.getenv('GEMINI_API_KEY'))
+        'has_gemini_key': bool(os.getenv('GEMINI_API_KEY')),
+        'target_hashtags': os.getenv('TARGET_HASHTAGS', 'cafe,restoran,tadbirlar'),
+        'auto_like_enabled': os.getenv('AUTO_LIKE_ENABLED', 'false'),
+        'auto_follow_enabled': os.getenv('AUTO_FOLLOW_ENABLED', 'false'),
+        'auto_comment_enabled': os.getenv('AUTO_COMMENT_ENABLED', 'false'),
+        'daily_like_limit': os.getenv('DAILY_LIKE_LIMIT', '100'),
+        'daily_follow_limit': os.getenv('DAILY_FOLLOW_LIMIT', '40'),
+        'daily_comment_limit': os.getenv('DAILY_COMMENT_LIMIT', '10')
     })
+
+@app.route('/api/growth/toggle', methods=['POST'])
+def toggle_growth():
+    """Toggle growth bot on/off"""
+    data = request.json
+    enabled = data.get('enabled', False)
+    success, message = bot_instance.toggle_growth(enabled)
+    return jsonify({'success': success, 'message': message})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

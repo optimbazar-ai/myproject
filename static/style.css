@@ -34,7 +34,7 @@ header p {
     opacity: 0.9;
 }
 
-.status-card, .login-card, .control-card, .log-card, .config-card {
+.status-card, .login-card, .control-card, .log-card, .config-card, .growth-card {
     background: white;
     border-radius: 12px;
     padding: 25px;
@@ -42,7 +42,7 @@ header p {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.status-card h2, .login-card h2, .control-card h2, .log-card h2 {
+.status-card h2, .login-card h2, .control-card h2, .log-card h2, .growth-card h2 {
     margin-bottom: 20px;
     color: #333;
 }
