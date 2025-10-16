@@ -29,7 +29,7 @@ def generate_reply(user_message: str, language: str = "uz") -> str:
 
         knowledge_base = load_knowledge_base()
         
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-pro")
 
         if knowledge_base:
             prompt = f"""Siz kompaniya AI yordamchisisiz. Mijozlarga professional va do'stona javob bering.

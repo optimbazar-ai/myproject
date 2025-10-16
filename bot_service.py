@@ -139,7 +139,7 @@ class InstagramBot:
                         if text:
                             language = os.getenv('LANGUAGE', 'uz')
                             reply = generate_reply(text, language)
-                            self.cl.comment_reply(media.id, comment.pk, reply)
+                            self.cl.media_comment(media.id, reply, replied_to_comment_id=comment.pk)
                             self.log_activity(f"💬 Kommentga javob: @{comment.user.username} → {reply[:50]}...")
                             self.replied_comments.add(comment_id)
                             self._save_replied_ids()
