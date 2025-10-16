@@ -150,14 +150,19 @@ class GrowthBot:
                 
                 try:
                     if media.user.pk != self.cl.user_id:
-                        caption = media.caption_text or "Ajoyib post"
-                        comment_text = self._generate_smart_comment(caption)
+                        existing_comments = self.cl.media_comments(media.id, amount=20)
+                        bot_already_commented = any(c.user.pk == self.cl.user_id for c in existing_comments)
                         
-                        self.cl.media_comment(media.id, comment_text)
-                        comments_done += 1
-                        self.stats['comments_today'] += 1
-                        self._save_stats()
-                        self._random_delay(5, 10)
+                        if not bot_already_commented:
+                            caption = media.caption_text or "Ajoyib post"
+                            comment_text = self._generate_smart_comment(caption)
+                            
+                            if comment_text and not comment_text.startswith("⚠️"):
+                                self.cl.media_comment(media.id, comment_text)
+                                comments_done += 1
+                                self.stats['comments_today'] += 1
+                                self._save_stats()
+                                self._random_delay(5, 10)
                 except:
                     continue
             

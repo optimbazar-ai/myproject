@@ -139,11 +139,15 @@ class InstagramBot:
                         if text:
                             language = os.getenv('LANGUAGE', 'uz')
                             reply = generate_reply(text, language)
-                            self.cl.media_comment(media.id, reply, replied_to_comment_id=comment.pk)
-                            self.log_activity(f"💬 Kommentga javob: @{comment.user.username} → {reply[:50]}...")
-                            self.replied_comments.add(comment_id)
-                            self._save_replied_ids()
-                            time.sleep(2)
+                            
+                            if reply and not reply.startswith("⚠️"):
+                                self.cl.media_comment(media.id, reply, replied_to_comment_id=comment.pk)
+                                self.log_activity(f"💬 Kommentga javob: @{comment.user.username} → {reply[:50]}...")
+                                self.replied_comments.add(comment_id)
+                                self._save_replied_ids()
+                                time.sleep(2)
+                            else:
+                                self.log_activity(f"⚠️ Gemini API xatosi - javob yuborilmadi")
         except Exception as e:
             self.log_activity(f"⚠️ Kommentlar xatosi: {str(e)}")
     
@@ -165,16 +169,20 @@ class InstagramBot:
                     
                     msg_id = str(message.id)
                     if msg_id in self.replied_dms:
-                        break
+                        continue
                     
                     if message.text:
                         language = os.getenv('LANGUAGE', 'uz')
                         reply = generate_reply(message.text, language)
-                        self.cl.direct_answer(thread.id, reply)
-                        self.log_activity(f"📩 DM javob: @{message.user_id} → {reply[:50]}...")
-                        self.replied_dms.add(msg_id)
-                        self._save_replied_ids()
-                        time.sleep(2)
+                        
+                        if reply and not reply.startswith("⚠️"):
+                            self.cl.direct_answer(thread.id, reply)
+                            self.log_activity(f"📩 DM javob: User → {reply[:50]}...")
+                            self.replied_dms.add(msg_id)
+                            self._save_replied_ids()
+                            time.sleep(2)
+                        else:
+                            self.log_activity(f"⚠️ Gemini API xatosi - javob yuborilmadi")
                         break
         except Exception as e:
             self.log_activity(f"⚠️ DM xatosi: {str(e)}")

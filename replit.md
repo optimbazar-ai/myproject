@@ -33,7 +33,15 @@ An intelligent Instagram bot that automatically replies to comments and direct m
 ```
 
 ## Recent Changes
+- **October 16, 2025 - Self-Reply Prevention Fix**: Fixed critical bug where bot could reply to its own messages. Added:
+  - DM loop logic fix (continue instead of break for already-replied messages)
+  - API error handling to prevent posting error messages as replies
+  - Growth bot duplicate comment prevention (checks existing comments before posting)
 - **October 16, 2025 - Session Cookie Login**: Added sessionid-based login to bypass Instagram rate limiting (429 errors), 2FA, and checkpoint challenges. This is now the recommended login method.
+- **October 16, 2025 - Import to Replit**: Successfully imported and configured project in Replit environment
+  - Installed all Python dependencies (Flask, instagrapi, google-generativeai)
+  - Set up workflow for automatic server management
+  - Added .gitignore for Python projects
 - Initial project setup (October 16, 2025)
 - Converted from Docker-based to Replit-compatible web application
 - Added Flask web dashboard for bot monitoring
