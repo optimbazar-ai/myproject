@@ -35,6 +35,9 @@ An intelligent Instagram bot that automatically replies to comments and direct m
 - Initial project setup (October 16, 2025)
 - Converted from Docker-based to Replit-compatible web application
 - Added Flask web dashboard for bot monitoring
+- Implemented session persistence to avoid re-login on every restart
+- Added persistent storage for replied comment/DM IDs to prevent duplicates
+- Improved thread management with proper join on stop
 
 ## Configuration
 Required environment variables:

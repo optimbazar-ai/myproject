@@ -1,6 +1,8 @@
 from instagrapi import Client
 import time
 import os
+import json
+from pathlib import Path
 from dotenv import load_dotenv
 from gemini_service import generate_reply
 import threading
@@ -16,7 +18,32 @@ class InstagramBot:
         self.replied_dms = set()
         self.activity_log = []
         self.thread = None
+        self.session_file = "instagram_session.json"
+        self.replied_ids_file = "replied_ids.json"
+        self._load_replied_ids()
         
+    def _load_replied_ids(self):
+        """Load previously replied IDs from file"""
+        try:
+            if Path(self.replied_ids_file).exists():
+                with open(self.replied_ids_file, 'r') as f:
+                    data = json.load(f)
+                    self.replied_comments = set(data.get('comments', []))
+                    self.replied_dms = set(data.get('dms', []))
+        except Exception as e:
+            print(f"Replied IDs yuklash xatosi: {e}")
+    
+    def _save_replied_ids(self):
+        """Save replied IDs to file"""
+        try:
+            with open(self.replied_ids_file, 'w') as f:
+                json.dump({
+                    'comments': list(self.replied_comments),
+                    'dms': list(self.replied_dms)
+                }, f)
+        except Exception as e:
+            print(f"Replied IDs saqlash xatosi: {e}")
+    
     def log_activity(self, message: str):
         """Add activity to log"""
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -27,10 +54,25 @@ class InstagramBot:
         print(log_entry)
     
     def login(self, username: str, password: str) -> tuple[bool, str]:
-        """Login to Instagram"""
+        """Login to Instagram with session persistence"""
         try:
             self.cl = Client()
-            self.cl.login(username, password)
+            
+            if Path(self.session_file).exists():
+                try:
+                    self.cl.load_settings(self.session_file)
+                    self.cl.login(username, password)
+                    self.log_activity("✅ Sessiondan qayta kirdik")
+                except Exception:
+                    self.cl = Client()
+                    self.cl.login(username, password)
+                    self.cl.dump_settings(self.session_file)
+                    self.log_activity("✅ Yangi session yaratildi")
+            else:
+                self.cl.login(username, password)
+                self.cl.dump_settings(self.session_file)
+                self.log_activity("✅ Birinchi marta session yaratildi")
+            
             self.is_logged_in = True
             self.log_activity(f"✅ Instagram'ga muvaffaqiyatli kirdik: @{username}")
             return True, "Muvaffaqiyatli kirdik!"
@@ -56,6 +98,7 @@ class InstagramBot:
                             self.cl.comment_reply(media.id, comment.pk, reply)
                             self.log_activity(f"💬 Kommentga javob: @{comment.user.username} → {reply[:50]}...")
                             self.replied_comments.add(comment.pk)
+                            self._save_replied_ids()
                             time.sleep(2)
         except Exception as e:
             self.log_activity(f"⚠️ Kommentlar xatosi: {str(e)}")
@@ -80,6 +123,7 @@ class InstagramBot:
                         self.cl.direct_answer(thread.id, reply)
                         self.log_activity(f"📩 DM javob yuborildi: {reply[:50]}...")
                         self.replied_dms.add(last_msg.id)
+                        self._save_replied_ids()
                         time.sleep(2)
         except Exception as e:
             self.log_activity(f"⚠️ DM xatosi: {str(e)}")
@@ -95,7 +139,10 @@ class InstagramBot:
             except Exception as e:
                 self.log_activity(f"⚠️ Bot xatosi: {str(e)}")
             
-            time.sleep(check_interval)
+            for _ in range(check_interval):
+                if not self.is_running:
+                    break
+                time.sleep(1)
     
     def start(self) -> tuple[bool, str]:
         """Start the bot"""
@@ -105,8 +152,11 @@ class InstagramBot:
         if self.is_running:
             return False, "Bot allaqachon ishlamoqda!"
         
+        if self.thread and self.thread.is_alive():
+            return False, "Avvalgi thread hali ishlamoqda!"
+        
         self.is_running = True
-        self.thread = threading.Thread(target=self.run_bot, daemon=True)
+        self.thread = threading.Thread(target=self.run_bot, daemon=False)
         self.thread.start()
         self.log_activity("🚀 Bot ishga tushdi!")
         return True, "Bot ishga tushdi!"
@@ -117,6 +167,11 @@ class InstagramBot:
             return False, "Bot ishlamayapti!"
         
         self.is_running = False
+        
+        if self.thread and self.thread.is_alive():
+            self.thread.join()
+            self.thread = None
+        
         self.log_activity("⏸️ Bot to'xtatildi!")
         return True, "Bot to'xtatildi!"
     
