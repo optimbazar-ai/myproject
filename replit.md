@@ -33,10 +33,22 @@ An intelligent Instagram bot that automatically replies to comments and direct m
 ```
 
 ## Recent Changes
+- **October 16, 2025 - DM Self-Reply Fix (CRITICAL)**: Completely rewrote DM handling logic to prevent bot from replying to its own messages:
+  - Now only processes the latest message in each thread (not all historical messages)
+  - Converts user IDs to integers for accurate comparison
+  - Skips any message from the bot itself (my_user_id == msg_user_id)
+  - Added detailed logging showing which message triggered a reply
+  - Prevents infinite loop of bot replying to itself
 - **October 16, 2025 - Self-Reply Prevention Fix**: Fixed critical bug where bot could reply to its own messages. Added:
   - DM loop logic fix (continue instead of break for already-replied messages)
   - API error handling to prevent posting error messages as replies
   - Growth bot duplicate comment prevention (checks existing comments before posting)
+- **October 16, 2025 - Instagram API Error Handling**: Added graceful handling for Instagram API `KeyError: 'data'` errors
+  - Bot continues running even when Instagram API fails temporarily
+  - Better error messages in logs for debugging
+- **October 16, 2025 - Gemini API Improvements**: Enhanced Gemini error handling and logging
+  - More detailed error messages
+  - Prevents sending error messages as replies to users
 - **October 16, 2025 - Session Cookie Login**: Added sessionid-based login to bypass Instagram rate limiting (429 errors), 2FA, and checkpoint challenges. This is now the recommended login method.
 - **October 16, 2025 - Import to Replit**: Successfully imported and configured project in Replit environment
   - Installed all Python dependencies (Flask, instagrapi, google-generativeai)

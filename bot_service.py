@@ -160,33 +160,37 @@ class InstagramBot:
             return
         
         try:
-            threads = self.cl.direct_threads()
+            threads = self.cl.direct_threads(amount=10)
+            my_user_id = int(self.cl.user_id)
+            
             for thread in threads:
                 messages = thread.messages
                 if not messages:
                     continue
                 
-                for message in messages:
-                    if message.user_id == self.cl.user_id:
-                        continue
+                latest_message = messages[0]
+                
+                msg_user_id = int(latest_message.user_id)
+                if msg_user_id == my_user_id:
+                    continue
+                
+                msg_id = str(latest_message.id)
+                if msg_id in self.replied_dms:
+                    continue
+                
+                if latest_message.text and latest_message.text.strip():
+                    language = os.getenv('LANGUAGE', 'uz')
+                    reply = generate_reply(latest_message.text, language)
                     
-                    msg_id = str(message.id)
-                    if msg_id in self.replied_dms:
-                        continue
-                    
-                    if message.text:
-                        language = os.getenv('LANGUAGE', 'uz')
-                        reply = generate_reply(message.text, language)
+                    if reply and not reply.startswith("⚠️"):
+                        self.cl.direct_answer(thread.id, reply)
+                        self.log_activity(f"📩 DM javob berildi: {latest_message.text[:30]}... → {reply[:50]}...")
+                        self.replied_dms.add(msg_id)
+                        self._save_replied_ids()
+                        time.sleep(2)
+                    else:
+                        self.log_activity(f"⚠️ Gemini API xatosi - DM'ga javob yuborilmadi")
                         
-                        if reply and not reply.startswith("⚠️"):
-                            self.cl.direct_answer(thread.id, reply)
-                            self.log_activity(f"📩 DM javob: User → {reply[:50]}...")
-                            self.replied_dms.add(msg_id)
-                            self._save_replied_ids()
-                            time.sleep(2)
-                        else:
-                            self.log_activity(f"⚠️ Gemini API xatosi - javob yuborilmadi")
-                        break
         except Exception as e:
             self.log_activity(f"⚠️ DM xatosi: {str(e)}")
     
