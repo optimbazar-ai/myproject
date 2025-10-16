@@ -28,8 +28,8 @@ class InstagramBot:
             if Path(self.replied_ids_file).exists():
                 with open(self.replied_ids_file, 'r') as f:
                     data = json.load(f)
-                    self.replied_comments = set(data.get('comments', []))
-                    self.replied_dms = set(data.get('dms', []))
+                    self.replied_comments = set(str(x) for x in data.get('comments', []))
+                    self.replied_dms = set(str(x) for x in data.get('dms', []))
         except Exception as e:
             print(f"Replied IDs yuklash xatosi: {e}")
     
@@ -131,14 +131,15 @@ class InstagramBot:
             for media in medias:
                 comments = self.cl.media_comments(media.id)
                 for comment in comments:
-                    if comment.pk not in self.replied_comments and comment.user.pk != self.cl.user_id:
+                    comment_id = str(comment.pk)
+                    if comment_id not in self.replied_comments and comment.user.pk != self.cl.user_id:
                         text = comment.text.strip()
                         if text:
                             language = os.getenv('LANGUAGE', 'uz')
                             reply = generate_reply(text, language)
                             self.cl.comment_reply(media.id, comment.pk, reply)
                             self.log_activity(f"💬 Kommentga javob: @{comment.user.username} → {reply[:50]}...")
-                            self.replied_comments.add(comment.pk)
+                            self.replied_comments.add(comment_id)
                             self._save_replied_ids()
                             time.sleep(2)
         except Exception as e:
@@ -156,16 +157,23 @@ class InstagramBot:
                 if not messages:
                     continue
                 
-                last_msg = messages[0]
-                if last_msg.user_id != self.cl.user_id and last_msg.id not in self.replied_dms:
-                    if last_msg.text:
+                for message in messages:
+                    if message.user_id == self.cl.user_id:
+                        continue
+                    
+                    msg_id = str(message.id)
+                    if msg_id in self.replied_dms:
+                        break
+                    
+                    if message.text:
                         language = os.getenv('LANGUAGE', 'uz')
-                        reply = generate_reply(last_msg.text, language)
+                        reply = generate_reply(message.text, language)
                         self.cl.direct_answer(thread.id, reply)
-                        self.log_activity(f"📩 DM javob yuborildi: {reply[:50]}...")
-                        self.replied_dms.add(last_msg.id)
+                        self.log_activity(f"📩 DM javob: @{message.user_id} → {reply[:50]}...")
+                        self.replied_dms.add(msg_id)
                         self._save_replied_ids()
                         time.sleep(2)
+                        break
         except Exception as e:
             self.log_activity(f"⚠️ DM xatosi: {str(e)}")
     
