@@ -57,14 +57,18 @@ class InstagramBot:
         """Login to Instagram with session persistence"""
         try:
             self.cl = Client()
+            self.cl.delay_range = [1, 3]
             
             if Path(self.session_file).exists():
                 try:
                     self.cl.load_settings(self.session_file)
                     self.cl.login(username, password)
                     self.log_activity("✅ Sessiondan qayta kirdik")
-                except Exception:
+                except Exception as load_error:
+                    self.log_activity(f"⚠️ Eski session ishlamadi, yangi yaratilmoqda...")
+                    Path(self.session_file).unlink(missing_ok=True)
                     self.cl = Client()
+                    self.cl.delay_range = [1, 3]
                     self.cl.login(username, password)
                     self.cl.dump_settings(self.session_file)
                     self.log_activity("✅ Yangi session yaratildi")
@@ -77,8 +81,21 @@ class InstagramBot:
             self.log_activity(f"✅ Instagram'ga muvaffaqiyatli kirdik: @{username}")
             return True, "Muvaffaqiyatli kirdik!"
         except Exception as e:
-            self.log_activity(f"❌ Login xatosi: {str(e)}")
-            return False, f"Xatolik: {str(e)}"
+            error_msg = str(e)
+            self.log_activity(f"❌ Login xatosi: {error_msg}")
+            
+            if "challenge" in error_msg.lower():
+                return False, "Instagram tasdiqlash so'ramoqda. Ilova orqali login qilishda muammo bo'lishi mumkin. Instagram'dan xavfsizlik tekshiruvini o'tkazing."
+            elif "two_factor" in error_msg.lower() or "2fa" in error_msg.lower():
+                return False, "2FA (ikki bosqichli tasdiqlash) yoqilgan. Botni ishlatish uchun 2FA'ni o'chirib qo'ying yoki maxsus paroldan foydalaning."
+            elif "checkpoint" in error_msg.lower():
+                return False, "Instagram checkpoint talab qilmoqda. Telefon yoki brauzerdan kirish kerak."
+            elif "password" in error_msg.lower():
+                return False, "Login yoki parol noto'g'ri. Qaytadan tekshiring."
+            elif "NoneType" in error_msg:
+                return False, "Instagram javob bermadi. Keyinroq qayta urinib ko'ring yoki akkauntingizda 2FA yo'qligini tekshiring."
+            else:
+                return False, f"Xatolik: {error_msg[:100]}"
     
     def handle_comments(self):
         """Reply to comments on posts"""
